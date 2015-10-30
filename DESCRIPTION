@@ -1,0 +1,17 @@
+Package: lz4
+Type: Package
+Title: "lz4" Data Compression and Decompression
+Version: 0.0.1
+Date: 2015-10-29
+Authors@R: c(person("Bryan", "Lewis", role = c("aut", "cre"),
+                     email = "blewis@illposed.net"),
+              person("Yann", "Collet", role = c("ctb","cph"),
+                     email = "somewhere"))
+Description: Data compression and decompression functions using the lz4 library.
+Depends: R (>= 3.0)
+License: BSD_2_clause
+Copyright: This package includes the sources of
+        the LZ4 library written by Yann Collet.
+LazyLoad: yes
+URL: https://github.com/bwlewis/lz4
+BugReports: https://github.com/bwlewis/lz4/issues

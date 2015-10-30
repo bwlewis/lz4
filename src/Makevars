@@ -1,0 +1,1 @@
+PKG_CPPFLAGS = -I. -std=c99 -pedantic -DXXH_NAMESPACE=LZ4_
