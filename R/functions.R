@@ -17,8 +17,9 @@
 #' @examples
 #' x <- head(airquality)
 #' y <- lzCompress(serialize(x, NULL))
-#' z <- lzDecompress(y)
+#' z <- unserialize(lzDecompress(y))
 #' all.equal(x, z)
+#'
 #' \dontrun{
 #' # Compatibility with the lz4 file format, this example assumes that
 #' # the 'lz4' program is in your system PATH.
