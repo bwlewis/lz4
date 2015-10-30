@@ -7,10 +7,10 @@
 #'          converted to raw vectors with character strings separated by
 #'          \code{"\n"} in the \code{lzCompress} case.
 #' @param level An integer between 0 (fast but less compression)
+#' and 9 (slow but more compression), inclusive.
 #' @param type Not used! This dummy argument is present to facilitate drop-in replacement with
 #' \code{memCompress}. We reserve the parameter name for future use however, but right now
 #' it is ignored.
-#' to 9 (slow but more compression), inclusive.
 #'
 #' @return A raw vector representing the compressed object.
 #'
