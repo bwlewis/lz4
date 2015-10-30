@@ -8,11 +8,14 @@ Authors@R: c(person("Bryan", "Lewis", role = c("aut", "cre"),
               person("Yann", "Collet", role = c("ctb","cph"),
                      email = "somewhere"))
 Description: Data compression and decompression functions using the lz4 library.
-Depends: R (>= 3.0)
-Suggests: datasets
+Depends:
+    R (>= 3.0)
+Suggests:
+    datasets
 License: BSD_2_clause + file LICENSE
 Copyright: This package includes the sources of
-        the LZ4 library written by Yann Collet.
+    the LZ4 library written by Yann Collet.
 LazyLoad: yes
 URL: https://github.com/bwlewis/lz4
 BugReports: https://github.com/bwlewis/lz4/issues
+RoxygenNote: 5.0.0

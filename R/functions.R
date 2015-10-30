@@ -7,6 +7,9 @@
 #'          converted to raw vectors with character strings separated by
 #'          \code{"\n"} in the \code{lzCompress} case.
 #' @param level An integer between 0 (fast but less compression)
+#' @param type Not used! This dummy argument is present to facilitate drop-in replacement with
+#' \code{memCompress}. We reserve the parameter name for future use however, but right now
+#' it is ignored.
 #' to 9 (slow but more compression), inclusive.
 #'
 #' @return A raw vector representing the compressed object.
@@ -37,8 +40,9 @@
 #'
 #' @seealso \code{\link{memCompress}}, \code{\link{memDecompress}}
 #' @export
-lzCompress <- function(from, level=0L)
+lzCompress <- function(from, level=0L, type)
 {
+  if(missing(type)) type <- NULL
   if (is.character(from)) 
       from <- charToRaw(paste(from, collapse = "\n"))
   else if (!is.raw(from)) 
@@ -50,8 +54,9 @@ lzCompress <- function(from, level=0L)
 
 #' @rdname lzCompress
 #' @export
-lzDecompress <- function(from)
+lzDecompress <- function(from, type)
 {
+  if(missing(type)) type <- NULL
   if (!is.raw(from)) 
       stop("'from' must be raw or character")
   .Call("do_lzDecompress", from)
