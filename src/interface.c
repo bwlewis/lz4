@@ -40,6 +40,7 @@
 
 #include "xxhash.h"
 #include "lz4frame.h"
+#include "lz4.h"
 
 
 /* NOTE! We replicate the otherwise internal LZ4F_dctx_s structure
@@ -142,6 +143,12 @@ do_lzCompress (SEXP FROM, SEXP LEVEL)
   return ans;
 }
 
+
+SEXP
+lz4_version()
+{
+  return ScalarInteger(LZ4_versionNumber());
+}
 
 SEXP
 do_lzDecompress (SEXP FROM)

@@ -49,7 +49,7 @@ lzCompress <- function(from, level=0L, type)
       stop("'from' must be raw or character")
   level <- as.integer(level)
   if(is.na(level)) stop("'level' mist be an integer between 0 and 9")
-  .Call("do_lzCompress", from, level)
+  .Call("do_lzCompress", from, level, PACKAGE="lz4")
 }
 
 #' @rdname lzCompress
@@ -59,5 +59,18 @@ lzDecompress <- function(from, type)
   if(missing(type)) type <- NULL
   if (!is.raw(from)) 
       stop("'from' must be raw or character")
-  .Call("do_lzDecompress", from)
+  .Call("do_lzDecompress", from, PACKAGE="lz4")
+}
+
+#' Return the lz4 library version number
+#'
+#' Return the lz4 library version number
+#' @return The integer value corresponding to the lz4 library version number
+#' embedded in the R package.
+#' @examples
+#' lz4_version()
+#' @export
+lz4_version <- function()
+{
+  .Call("lz4_version", PACKAGE="lz4")
 }

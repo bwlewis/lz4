@@ -41,3 +41,7 @@ eu <- serialize(EuStockMarkets, NULL)
 ans <- lapply(seq(0,9), function(j)
     object.size(lzCompress(eu, j, type="lz4"))
   )
+
+
+# Version number
+lz4_version()
