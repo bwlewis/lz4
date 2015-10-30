@@ -9,5 +9,6 @@
 #' @name lz4
 #' 
 #' @useDynLib lz4
+#' @seealso \code{\link{lzCompress}}, \code{\link{lzDecompress}}
 #' @docType package
 NULL

@@ -46,7 +46,7 @@ decompressed_file <- tempfile()
 system2("lz4", args=c("-d", compressed_file, decompressed_file))
 
 # Examine the output:
-readLines(decompressed_file)
+readLines(decompressed_file, warn=FALSE)
 }
 }
 \seealso{

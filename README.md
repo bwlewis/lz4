@@ -9,6 +9,16 @@ compression and, especially, decompression speeds are much much faster!
 
 Use the lz4 functions in speed-sensitive situations.
 
+## Installation
+
+Easiest to install with the `devtools` package:
+```r
+devtools::install_github("bwlewis/lz4")
+
+library(lz4)
+?lzCompress
+```
+
 ## TODO
 
 Add data streaming functions!
