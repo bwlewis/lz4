@@ -29,9 +29,14 @@ LZ4 is lossless compression algorithm, providing compression speed at 400 MB/s
 per core (0.16 Bytes/cycle). It features an extremely fast decoder, with speed
 in multiple GB/s per core (0.71 Bytes/cycle).
 
+
 ## References
 
-* http://www.lz4.org
+At least one other R package, the http://www.bioconductor.org/packages/release/bioc/html/gdsfmt.html
+package from the Bioconductor, uses the lz4 library. However that package has a sufficiently
+specialized implementation that I decided to write this much simpler and more general one anyway.
+
+See http://www.lz4.org for more on lz4.
 
 
 ## Status
