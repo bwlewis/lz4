@@ -1,7 +1,7 @@
 Package: lz4
 Type: Package
 Title: "lz4" Data Compression and Decompression
-Version: 0.0.1
+Version: 0.0.2
 Date: 2015-10-29
 Authors@R: c(person("Bryan", "Lewis", role = c("aut", "cre"),
                      email = "blewis@illposed.net"),
