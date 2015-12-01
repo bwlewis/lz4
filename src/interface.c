@@ -159,7 +159,7 @@ do_lzDecompress (SEXP FROM)
   LZ4F_frameInfo_t info;
   char *from;
   void *src;
-  size_t n, output_size, input_size = (size_t) XLENGTH(FROM);
+  size_t m, n, output_size, input_size = (size_t) XLENGTH(FROM);
   if(TYPEOF(FROM) != RAWSXP) error("'from' must be raw or character");
   from = (char *)RAW(FROM);
 
@@ -186,14 +186,14 @@ do_lzDecompress (SEXP FROM)
   memset(dctxPtr, 0, sizeof(LZ4F_dctx_t));
   dctxPtr->version = LZ4F_VERSION;
   ctx = (LZ4F_decompressionContext_t)dctxPtr;
-
+  m   = input_size;
   n   = LZ4F_getFrameInfo(ctx, &info, (void *)from, &input_size);
   if (LZ4F_isError (n)) error("LZ4F_getFrameInfo");
   src = from + input_size; // lz4 frame header offset
   output_size = (size_t)info.contentSize; 
   ANS = allocVector(RAWSXP, output_size);
 
-  input_size = (size_t) XLENGTH(FROM) - input_size;
+  input_size = m - input_size;
   n = LZ4F_decompress(ctx, RAW(ANS), &output_size, src, &input_size, NULL); 
   if (LZ4F_isError (n)) error("LZ4F_decompress");
 
