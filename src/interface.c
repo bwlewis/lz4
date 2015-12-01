@@ -1,3 +1,4 @@
+#include <stdio.h>
 /*
  * Simple LZ4 R interface
  * Based on the LZ4 fast compression/decompression library by Yann Collet.
@@ -41,6 +42,8 @@
 #include "xxhash.h"
 #include "lz4frame.h"
 #include "lz4.h"
+
+#define lzframe_chunksize 16777216  // 2^24 bytes
 
 
 /* NOTE! We replicate the otherwise internal LZ4F_dctx_s structure
@@ -158,8 +161,10 @@ do_lzDecompress (SEXP FROM)
 
   LZ4F_frameInfo_t info;
   char *from;
+  char *ans;
   void *src;
   size_t m, n, output_size, input_size = xlength(FROM);
+  size_t ibuf, obuf, icum, ocum;
   if(TYPEOF(FROM) != RAWSXP) error("'from' must be raw or character");
   from = (char *)RAW(FROM);
 
@@ -190,12 +195,30 @@ do_lzDecompress (SEXP FROM)
   n   = LZ4F_getFrameInfo(ctx, &info, (void *)from, &input_size);
   if (LZ4F_isError (n)) error("LZ4F_getFrameInfo");
   src = from + input_size; // lz4 frame header offset
-  output_size = (size_t)info.contentSize; 
+  output_size = (size_t) info.contentSize; 
   ANS = allocVector(RAWSXP, output_size);
+  ans = (char *)RAW(ANS);
 
   input_size = m - input_size;
-  n = LZ4F_decompress(ctx, RAW(ANS), &output_size, src, &input_size, NULL); 
-  if (LZ4F_isError (n)) error("LZ4F_decompress");
+  icum = 0;
+  ibuf = lzframe_chunksize;
+  if(ibuf > input_size) ibuf = input_size;
+  ocum = 0;
+  obuf = output_size;
+
+  for(;;)
+  {
+    n = LZ4F_decompress(ctx, ans, &obuf, src, &ibuf, NULL); 
+    if (LZ4F_isError (n)) error("LZ4F_decompress");
+    icum = icum + ibuf;
+    ocum = ocum + obuf;
+    if(icum >= input_size) break;
+    ans = ans + obuf;
+    src = src + ibuf;
+    ibuf = lzframe_chunksize;
+    if(ibuf > (input_size - icum)) ibuf = input_size - icum;
+    obuf = output_size - ocum;
+  }
 
   return ANS;
 }
