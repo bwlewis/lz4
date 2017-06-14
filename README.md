@@ -21,7 +21,7 @@ library(lz4)
 
 ## TODO
 
-Add data streaming functions!
+Add data streaming functions! ANYONE WANT TO HELP ADD THESE?
 
 ## Overview of the lz4 algorithms
 
