@@ -32,9 +32,12 @@ in multiple GB/s per core (0.71 Bytes/cycle).
 
 ## References
 
-At least one other R package, the http://www.bioconductor.org/packages/release/bioc/html/gdsfmt.html
-package from the Bioconductor, uses the lz4 library. However that package has a sufficiently
-specialized implementation that I decided to write this much simpler and more general one anyway.
+At least two other R packages, the
+http://www.bioconductor.org/packages/release/bioc/html/gdsfmt.html package from
+the Bioconductor, and https://github.com/fstPackage, use the lz4 library.
+However both packages are sufficiently specialized implementation that I
+decided to write this much simpler, limited package with a focus only on
+compression to promote software modularity.
 
 See http://www.lz4.org for more on lz4.
 
