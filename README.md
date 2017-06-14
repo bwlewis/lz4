@@ -43,8 +43,10 @@ See http://www.lz4.org for more on lz4.
 <a href="https://travis-ci.org/bwlewis/lz4">
 <img src="https://travis-ci.org/bwlewis/lz4.svg?branch=master" alt="Travis CI status"></img>
 </a>
-[![codecov.io](https://codecov.io/github/bwlewis/lz4/coverage.svg?branch=master)](https://codecov.io/github/bwlewis/lz4?branch=master)
-[![CRAN version](http://www.r-pkg.org/badges/version/lz4)](http://cran.rstudio.com/web/packages/lz4/index.html)
-![](http://cranlogs-dev.r-pkg.org/badges/lz4)
+[![codecov](https://codecov.io/gh/bwlewis/lz4/branch/master/graph/badge.svg)](https://codecov.io/gh/bwlewis/lz4)
+
 ### The code coverage is too damn low!
-Because we're using a tiny fraction of the lz4 library capabilities, but checking all library lines of code. This is just an incentive to implement more of the lz4 functionality at the R level!
+
+Because we're using a tiny fraction of the lz4 library capabilities, but
+checking all library lines of code. This is just an incentive to implement more
+of the lz4 functionality at the R level!
