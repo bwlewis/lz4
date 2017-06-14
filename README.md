@@ -43,7 +43,9 @@ See http://www.lz4.org for more on lz4.
 <a href="https://travis-ci.org/bwlewis/lz4">
 <img src="https://travis-ci.org/bwlewis/lz4.svg?branch=master" alt="Travis CI status"></img>
 </a>
-[![codecov](https://codecov.io/gh/bwlewis/lz4/branch/master/graph/badge.svg)](https://codecov.io/gh/bwlewis/lz4)
+<a href="https://codecov.io/gh/bwlewis/lz4/branch/master">
+<img src="https://codecov.io/gh/bwlewis/lz4/branch/master/graph/badge.svg"/>
+</a>
 
 ### The code coverage is too damn low!
 
