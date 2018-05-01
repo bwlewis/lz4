@@ -1,13 +1,15 @@
+# DEFUNCT
+
+This package will not be maintained. Instead, use the better 'fst' package, see
+http://www.fstpackage.org/, which now includes faster and better in-memory
+compression methods `fst::compress_fst` and `fst::decompress_fst` covered here,
+as well as several file-based compression options.
+
+Note that neither this package nor the fst package include proper streaming
+options to arbitrary connections...something someone should add to fst!
+
+
 # lz4 Data Compression/Decompression Functions 
-
-This simple package provides in-memory data compression and decompression using
-the superb lz4 library following R's `memCompress`/`memDecompress` model.
-
-As implemented here, the lz4 functions are not quite as good at compression
-as the default available R compression functions gzip, bzip2 and xz. But
-compression and, especially, decompression speeds are much much faster!
-
-Use the lz4 functions in speed-sensitive situations.
 
 ## Installation
 
