@@ -8,7 +8,7 @@ as well as several file-based compression options.
 Note that neither this package nor the fst package include proper streaming
 options to arbitrary connections...something someone should add to fst!
 
-October, 2018: there were some sever internal lz4 bugs that apparently also affect the fst package. I re-activated this repository to update lz4 for those who are still using it, and will file bug reports against fst...
+October, 2018: there were some severe internal lz4 bugs that apparently also affect the fst package. I re-activated this repository to update lz4 for those who are still using it, and will file bug reports against fst...
 
 
 # lz4 Data Compression/Decompression Functions 
