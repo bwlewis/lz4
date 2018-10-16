@@ -51,27 +51,40 @@
  * in the do_lzDecompress function. IF YOU UPDATE THE VERSION OF
  * lz4 USED BY THIS PACKAGE BEWARE OF THIS AND ALSO UPDATE THIS!
  */
-typedef struct LZ4F_dctx_s
-{   
+
+typedef struct XXH32_state_s {
+   uint32_t total_len_32;
+   uint32_t large_len;
+   uint32_t v1;
+   uint32_t v2;
+   uint32_t v3;
+   uint32_t v4;
+   uint32_t mem32[4];
+   uint32_t memsize;
+   uint32_t reserved;   /* never read nor write, might be removed in a future version */
+} XXH32_state_t;
+
+typedef struct LZ4F_dctx_s {
     LZ4F_frameInfo_t frameInfo;
-    uint32_t version;
+    uint32_t    version;
     uint32_t dStage;
-    uint64_t frameRemainingSize;
+    uint64_t    frameRemainingSize;
     size_t maxBlockSize;
     size_t maxBufferSize;
-    const char* srcExpect;
     char*  tmpIn;
     size_t tmpInSize;
     size_t tmpInTarget;
     char*  tmpOutBuffer;
-    const char*  dict;
+    const char* dict;
     size_t dictSize;
     char*  tmpOut;
     size_t tmpOutSize;
     size_t tmpOutStart;
     XXH32_state_t xxh;
-    char   header[16];
-} LZ4F_dctx_t;
+    XXH32_state_t blockChecksum;
+    char   header[LZ4F_HEADER_SIZE_MAX];
+} LZ4F_dctx_t ;  /* typedef'd to LZ4F_dctx in lz4frame.h */
+
 
 
 /* lz4_compress support function
