@@ -231,6 +231,7 @@ LZ4HC_InsertAndGetWiderMatch (
     int matchChainPos = 0;
     U32 const pattern = LZ4_read32(ip);
     U32 matchIndex;
+    U32 dictMatchIndex;
     repeat_state_e repeat = rep_untested;
     size_t srcPatternLength = 0;
 
@@ -348,8 +349,8 @@ LZ4HC_InsertAndGetWiderMatch (
 
     if (dict == usingDictCtx && nbAttempts && ipIndex - lowestMatchIndex < MAX_DISTANCE) {
         size_t const dictEndOffset = dictCtx->end - dictCtx->base;
-        U32 dictMatchIndex = dictCtx->hashTable[LZ4HC_hashPtr(ip)];
         assert(dictEndOffset <= 1 GB);
+        dictMatchIndex = dictCtx->hashTable[LZ4HC_hashPtr(ip)];
         matchIndex = dictMatchIndex + lowestMatchIndex - (U32)dictEndOffset;
         while (ipIndex - matchIndex <= MAX_DISTANCE && nbAttempts--) {
             const BYTE* const matchPtr = dictCtx->base + dictMatchIndex;
@@ -399,7 +400,7 @@ int LZ4HC_InsertAndFindBestMatch(LZ4HC_CCtx_internal* const hc4,   /* Index tabl
 typedef enum {
     noLimit = 0,
     limitedOutput = 1,
-    limitedDestSize = 2
+    limitedDestSize = 2,
 } limitedOutput_directive;
 
 /* LZ4HC_encodeSequence() :
@@ -744,22 +745,16 @@ LZ4_FORCE_INLINE int LZ4HC_compress_generic_internal (
     cLevel = MIN(LZ4HC_CLEVEL_MAX, cLevel);
     {   cParams_t const cParam = clTable[cLevel];
         HCfavor_e const favor = ctx->favorDecSpeed ? favorDecompressionSpeed : favorCompressionRatio;
-        int result;
-
-        if (cParam.strat == lz4hc) {
-            result = LZ4HC_compress_hashChain(ctx,
+        if (cParam.strat == lz4hc)
+            return LZ4HC_compress_hashChain(ctx,
                                 src, dst, srcSizePtr, dstCapacity,
                                 cParam.nbSearches, limit, dict);
-        } else {
-            assert(cParam.strat == lz4opt);
-            result = LZ4HC_compress_optimal(ctx,
-                                src, dst, srcSizePtr, dstCapacity,
-                                cParam.nbSearches, cParam.targetLength, limit,
-                                cLevel == LZ4HC_CLEVEL_MAX,   /* ultra mode */
-                                dict, favor);
-        }
-        if (result <= 0) ctx->dirty = 1;
-        return result;
+        assert(cParam.strat == lz4opt);
+        return LZ4HC_compress_optimal(ctx,
+                            src, dst, srcSizePtr, dstCapacity,
+                            cParam.nbSearches, cParam.targetLength, limit,
+                            cLevel == LZ4HC_CLEVEL_MAX,   /* ultra mode */
+                            dict, favor);
     }
 }
 
@@ -898,21 +893,16 @@ void LZ4_resetStreamHC (LZ4_streamHC_t* LZ4_streamHCPtr, int compressionLevel)
     LZ4_streamHCPtr->internal_donotuse.base = NULL;
     LZ4_streamHCPtr->internal_donotuse.dictCtx = NULL;
     LZ4_streamHCPtr->internal_donotuse.favorDecSpeed = 0;
-    LZ4_streamHCPtr->internal_donotuse.dirty = 0;
     LZ4_setCompressionLevel(LZ4_streamHCPtr, compressionLevel);
 }
 
 void LZ4_resetStreamHC_fast (LZ4_streamHC_t* LZ4_streamHCPtr, int compressionLevel)
 {
     DEBUGLOG(4, "LZ4_resetStreamHC_fast(%p, %d)", LZ4_streamHCPtr, compressionLevel);
-    if (LZ4_streamHCPtr->internal_donotuse.dirty) {
-        LZ4_resetStreamHC(LZ4_streamHCPtr, compressionLevel);
-    } else {
-        LZ4_streamHCPtr->internal_donotuse.end -= (uptrval)LZ4_streamHCPtr->internal_donotuse.base;
-        LZ4_streamHCPtr->internal_donotuse.base = NULL;
-        LZ4_streamHCPtr->internal_donotuse.dictCtx = NULL;
-        LZ4_setCompressionLevel(LZ4_streamHCPtr, compressionLevel);
-    }
+    LZ4_streamHCPtr->internal_donotuse.end -= (uptrval)LZ4_streamHCPtr->internal_donotuse.base;
+    LZ4_streamHCPtr->internal_donotuse.base = NULL;
+    LZ4_streamHCPtr->internal_donotuse.dictCtx = NULL;
+    LZ4_setCompressionLevel(LZ4_streamHCPtr, compressionLevel);
 }
 
 void LZ4_setCompressionLevel(LZ4_streamHC_t* LZ4_streamHCPtr, int compressionLevel)

@@ -45,66 +45,17 @@
 
 #define lzframe_chunksize 16777216  // 2^24 bytes
 
-
-/* NOTE! We replicate the otherwise internal LZ4F_dctx_s structure
- * here for arcane memory management issues further described below
- * in the do_lzDecompress function. IF YOU UPDATE THE VERSION OF
- * lz4 USED BY THIS PACKAGE BEWARE OF THIS AND ALSO UPDATE THIS!
- */
-
-typedef struct XXH32_state_s {
-   uint32_t total_len_32;
-   uint32_t large_len;
-   uint32_t v1;
-   uint32_t v2;
-   uint32_t v3;
-   uint32_t v4;
-   uint32_t mem32[4];
-   uint32_t memsize;
-   uint32_t reserved;   /* never read nor write, might be removed in a future version */
-} XXH32_state_t;
-
-typedef struct LZ4F_dctx_s {
-    LZ4F_frameInfo_t frameInfo;
-    uint32_t    version;
-    uint32_t dStage;
-    uint64_t    frameRemainingSize;
-    size_t maxBlockSize;
-    size_t maxBufferSize;
-    char*  tmpIn;
-    size_t tmpInSize;
-    size_t tmpInTarget;
-    char*  tmpOutBuffer;
-    const char* dict;
-    size_t dictSize;
-    char*  tmpOut;
-    size_t tmpOutSize;
-    size_t tmpOutStart;
-    XXH32_state_t xxh;
-    XXH32_state_t blockChecksum;
-    char   header[LZ4F_HEADER_SIZE_MAX];
-} LZ4F_dctx_t ;  /* typedef'd to LZ4F_dctx in lz4frame.h */
-
-
-
-/* lz4_compress support function
- * @param src constant input memory buffer of size size to be compressed
- * @param srz_size input memory buffer size
- * @param dest ouput memory buffer of size size in which to place results
- * @param dest_size pointer to a variable that contains the size of dest on input
- *        and is updated to contain the size of compressed data in dest on out
- * @param level compression level from 1 (low/fast) to 9 (high/slow)
- * Returns an error code, 0 for success non-zero otherwise.
- */
-int
-lz4_compress (void *src, size_t src_size, void *dest, size_t * dest_size,
-              int level)
+SEXP
+do_lzCompress (SEXP FROM, SEXP LEVEL)
 {
-  size_t n, len = 0;
-  LZ4F_errorCode_t err;
+  char *buf;
+  SEXP ans;
+  int level = *(INTEGER(LEVEL));
+  size_t input_size, buffer_size, ret;
   LZ4F_preferences_t prefs;
-  LZ4F_compressionContext_t ctx;
-  int retval = 0;
+
+  if (TYPEOF(FROM) != RAWSXP) error("'from' must be raw or character");
+  input_size = (size_t) xlength(FROM);
 
   /* Set compression parameters */
   memset (&prefs, 0, sizeof (prefs));
@@ -113,49 +64,16 @@ lz4_compress (void *src, size_t src_size, void *dest, size_t * dest_size,
   prefs.frameInfo.blockMode = 0;        /* blockLinked, blockIndependent ; 0 == default */
   prefs.frameInfo.blockSizeID = 0;      /* max64KB, max256KB, max1MB, max4MB ; 0 == default */
   prefs.frameInfo.contentChecksumFlag = 1;      /* noContentChecksum, contentChecksumEnabled ; 0 == default  */
-  prefs.frameInfo.contentSize = (long long)src_size;  /* for reference */
+  prefs.frameInfo.contentSize = (long long)input_size;  /* for reference */
 
-  /* create context */
-  err = LZ4F_createCompressionContext (&ctx, LZ4F_VERSION);
-  if (LZ4F_isError (err))
-    return -1;
-
-  n = LZ4F_compressFrame (dest, *dest_size, src, src_size, &prefs);
-  if (LZ4F_isError (n))
-    {
-      retval = -2;
-      goto cleanup;
-    }
-  /* update the compressed buffer size */
-  *dest_size = n;
-
-cleanup:
-  if (ctx)
-    {
-      err = LZ4F_freeCompressionContext (ctx);
-      if (LZ4F_isError (err))
-        return -5;
-    }
-
-  return retval;
-}
-
-
-SEXP
-do_lzCompress (SEXP FROM, SEXP LEVEL)
-{
-  char *buf;
-  int ret;
-  SEXP ans;
-  int level = *(INTEGER(LEVEL));
-  size_t input_size = (size_t) xlength(FROM);
-  size_t buffer_size = input_size*1.1 + 100;
-  if(TYPEOF(FROM) != RAWSXP) error("'from' must be raw or character");
+  buffer_size = LZ4F_compressFrameBound(input_size, &prefs);
   buf = (char *) R_alloc(buffer_size, sizeof(char));
-  ret = lz4_compress((void *)RAW(FROM), input_size, (void *)buf, &buffer_size, level);
-  if(ret<0) error("internal error %d in lz4_compress",ret);
-  ans = allocVector(RAWSXP, buffer_size);
-  memcpy(RAW(ans), buf, buffer_size);
+
+  ret = LZ4F_compressFrame (buf, buffer_size, (char *)RAW(FROM), input_size, &prefs);
+  if (LZ4F_isError(ret)) error("internal error %d in lz4_compress", ret);
+  if (ret > buffer_size) error("lz4 compression buffer size mismatch");
+  ans = allocVector(RAWSXP, ret);
+  memcpy(RAW(ans), buf, ret);
   return ans;
 }
 
@@ -166,12 +84,24 @@ lz4_version()
   return ScalarInteger(LZ4_versionNumber());
 }
 
+static size_t get_block_size(const LZ4F_frameInfo_t* info) {
+    switch (info->blockSizeID) {
+        case LZ4F_default:
+        case LZ4F_max64KB:  return 1 << 16;
+        case LZ4F_max256KB: return 1 << 18;
+        case LZ4F_max1MB:   return 1 << 20;
+        case LZ4F_max4MB:   return 1 << 22;
+        default: error ("Impossible with expected frame specification (<=v1.6.1)\n");
+            exit(1);
+    }
+}
+
+
 SEXP
 do_lzDecompress (SEXP FROM)
 {
   SEXP ANS;
-  LZ4F_decompressionContext_t ctx;
-
+  LZ4F_dctx* dctx;
   LZ4F_frameInfo_t info;
   char *from;
   char *ans;
@@ -181,37 +111,21 @@ do_lzDecompress (SEXP FROM)
   if(TYPEOF(FROM) != RAWSXP) error("'from' must be raw or character");
   from = (char *)RAW(FROM);
 
-/* An implementation following the standard API would do this:
- *   LZ4F_errorCode_t err = LZ4F_createDecompressionContext(&ctx, LZ4F_VERSION);
- *   if (LZ4F_isError (err)) error("could not create LZ4 decompression context");
- *   ...
- *   LZ4F_freeDecompressionContext(ctx);
- * The problem with that approach is that LZ4F_createDecompressionContext
- * allocates memory with calloc internally. Later, if R's allocVector fails,
- * for example, or if R interrupts this function somewhere in '...' then
- * those internal allocations in LZ4F_createDecompressionContext leak--that is
- * they aren't ever de-allocated.
- *
- * We explicitly allocat the LZ4F_decompressionContext_t pointer using a
- * replica of the internal LZ4F_dctx_t structure defined near the top of this
- * file, see the note and corresponding warning! We allocate on the heap (via
- * R_alloc) here instead of a seemingly simpler stack allocation because LZ4
- * indicates that the address needs to be aligned to 8-byte boundaries which is
- * provided by R_alloc, see:
- * https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Transient-storage-allocation
- */
-  LZ4F_dctx_t *dctxPtr = (LZ4F_dctx_t *)R_alloc(1, sizeof(LZ4F_dctx_t));
-  memset(dctxPtr, 0, sizeof(LZ4F_dctx_t));
-  dctxPtr->version = LZ4F_VERSION;
-  ctx = (LZ4F_decompressionContext_t)dctxPtr;
+  { size_t const err = LZ4F_createDecompressionContext(&dctx, LZ4F_VERSION);
+    if (LZ4F_isError(err)) error("LZ4F_createDecompressionContext");
+  }
   m   = input_size;
-  n   = LZ4F_getFrameInfo(ctx, &info, (void *)from, &input_size);
-  if (LZ4F_isError (n)) error("LZ4F_getFrameInfo");
-  src = from + input_size; // lz4 frame header offset
+  { size_t const err   = LZ4F_getFrameInfo(dctx, &info, (void *)from, &input_size);
+    if (LZ4F_isError (err)) error("LZ4F_getFrameInfo");
+  }
+
   output_size = (size_t) info.contentSize; 
+  if (output_size == 0) error ("lzDecompress currently requires lz4 compressions with --content-size option");
   ANS = allocVector(RAWSXP, output_size);
   ans = (char *)RAW(ANS);
+  obuf = get_block_size(&info);
 
+  src = from + input_size; // lz4 frame header offset
   input_size = m - input_size;
   icum = 0;
   ibuf = lzframe_chunksize;
@@ -221,17 +135,18 @@ do_lzDecompress (SEXP FROM)
 
   for(;;)
   {
-    n = LZ4F_decompress(ctx, ans, &obuf, src, &ibuf, NULL); 
+    n = LZ4F_decompress(dctx, ans, &obuf, src, &ibuf, NULL); 
     if (LZ4F_isError (n)) error("LZ4F_decompress");
     icum = icum + ibuf;
     ocum = ocum + obuf;
-    if(icum >= input_size) break;
+    if(icum >= input_size || ibuf == 0) break;
     ans = ans + obuf;
     src = src + ibuf;
     ibuf = lzframe_chunksize;
     if(ibuf > (input_size - icum)) ibuf = input_size - icum;
     obuf = output_size - ocum;
   }
+  LZ4F_freeDecompressionContext(dctx);
 
   return ANS;
 }

@@ -123,20 +123,12 @@ LZ4LIB_API int LZ4_saveDictHC (LZ4_streamHC_t* streamHCPtr, char* safeBuffer, in
 */
 
 
-
-
-/*^**********************************************
- * !!!!!!   STATIC LINKING ONLY   !!!!!!
- ***********************************************/
-
-/*-******************************************************************
+/*-**************************************************************
  * PRIVATE DEFINITIONS :
- * Do not use these definitions directly.
- * They are merely exposed to allow static allocation of `LZ4_streamHC_t`.
- * Declare an `LZ4_streamHC_t` directly, rather than any type below.
- * Even then, only do so in the context of static linking, as definitions may change between versions.
- ********************************************************************/
-
+ * Do not use these definitions.
+ * They are exposed to allow static allocation of `LZ4_streamHC_t`.
+ * Using these definitions makes the code vulnerable to potential API break when upgrading LZ4
+ ****************************************************************/
 #define LZ4HC_DICTIONARY_LOGSIZE 16
 #define LZ4HC_MAXD (1<<LZ4HC_DICTIONARY_LOGSIZE)
 #define LZ4HC_MAXD_MASK (LZ4HC_MAXD - 1)
@@ -161,9 +153,7 @@ struct LZ4HC_CCtx_internal
     uint32_t   lowLimit;        /* below that point, no more dict */
     uint32_t   nextToUpdate;    /* index from which to continue dictionary update */
     short      compressionLevel;
-    int8_t     favorDecSpeed;   /* favor decompression speed if this flag set,
-                                   otherwise, favor compression ratio */
-    int8_t     dirty;           /* stream has to be fully reset if this flag is set */
+    short      favorDecSpeed;
     const LZ4HC_CCtx_internal* dictCtx;
 };
 
@@ -181,30 +171,26 @@ struct LZ4HC_CCtx_internal
     unsigned int   lowLimit;         /* below that point, no more dict */
     unsigned int   nextToUpdate;     /* index from which to continue dictionary update */
     short          compressionLevel;
-    char           favorDecSpeed;    /* favor decompression speed if this flag set,
-                                        otherwise, favor compression ratio */
-    char           dirty;            /* stream has to be fully reset if this flag is set */
+    short          favorDecSpeed;
     const LZ4HC_CCtx_internal* dictCtx;
 };
 
 #endif
 
-
-/* do not use these definitions directly.
- * allocate an LZ4_streamHC_t instead. */
-#define LZ4_STREAMHCSIZE       (4*LZ4HC_HASHTABLESIZE + 2*LZ4HC_MAXD + 56 + ((sizeof(void*)==16) ? 56 : 0) /* AS400*/ ) /* 262200 or 262256*/
+#define LZ4_STREAMHCSIZE       (4*LZ4HC_HASHTABLESIZE + 2*LZ4HC_MAXD + 56) /* 262200 */
 #define LZ4_STREAMHCSIZE_SIZET (LZ4_STREAMHCSIZE / sizeof(size_t))
 union LZ4_streamHC_u {
     size_t table[LZ4_STREAMHCSIZE_SIZET];
     LZ4HC_CCtx_internal internal_donotuse;
-}; /* previously typedef'd to LZ4_streamHC_t */
-/* LZ4_streamHC_t :
- * This structure allows static allocation of LZ4 HC streaming state.
- * State must be initialized using LZ4_resetStreamHC() before first use.
- *
- * Static allocation shall only be used in combination with static linking.
- * When invoking LZ4 from a DLL, use create/free functions instead, which are API and ABI stable.
- */
+};   /* previously typedef'd to LZ4_streamHC_t */
+/*
+  LZ4_streamHC_t :
+  This structure allows static allocation of LZ4 HC streaming state.
+  State must be initialized using LZ4_resetStreamHC() before first use.
+
+  Static allocation shall only be used in combination with static linking.
+  When invoking LZ4 from a DLL, use create/free functions instead, which are API and ABI stable.
+*/
 
 
 /*-************************************
@@ -318,11 +304,6 @@ void LZ4_favorDecompressionSpeed(LZ4_streamHC_t* LZ4_streamHCPtr, int favor);
  *  - the stream was in an indeterminate state and was used in a compression
  *    call that fully reset the state (LZ4_compress_HC_extStateHC()) and that
  *    returned success
- *
- *  Note:
- *  A stream that was last used in a compression call that returned an error
- *  may be passed to this function. However, it will be fully reset, which will
- *  clear any existing history and settings from the context.
  */
 void LZ4_resetStreamHC_fast(LZ4_streamHC_t* LZ4_streamHCPtr, int compressionLevel);
 
