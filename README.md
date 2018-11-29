@@ -1,14 +1,21 @@
 # DEFUNCT
 
-This package will not be maintained. Instead, use the better 'fst' package, see
-http://www.fstpackage.org/, which now includes faster and better in-memory
-compression methods `fst::compress_fst` and `fst::decompress_fst` covered here,
-as well as several file-based compression options.
+This package will probably not be maintained. Instead, use the better 'fst'
+package, see http://www.fstpackage.org/, which now includes faster and better
+in-memory compression methods `fst::compress_fst` and `fst::decompress_fst`
+covered here, as well as several file-based compression options.
 
 Note that neither this package nor the fst package include proper streaming
 options to arbitrary connections...something someone should add to fst!
 
-October, 2018: there were some severe internal lz4 bugs that apparently also affect the fst package. I re-activated this repository to update lz4 for those who are still using it, and will file bug reports against fst...
+October, 2018: there were some severe internal lz4 bugs that apparently also
+affect the fst package. I re-activated this repository to update lz4 for those
+who are still using it, and will file bug reports against fst...
+
+However, one potential advantage of this package is single-threaded operation
+(when used in process-parallel settings), and compatability with the command
+line lz4 file format, see for instance the example in the help page
+for `?lzDecompress`.
 
 
 # lz4 Data Compression/Decompression Functions 
@@ -53,9 +60,3 @@ See http://www.lz4.org for more on lz4.
 <a href="https://codecov.io/gh/bwlewis/lz4/branch/master">
 <img src="https://codecov.io/gh/bwlewis/lz4/branch/master/graph/badge.svg"/>
 </a>
-
-### The code coverage is too damn low!
-
-Because we're using a tiny fraction of the lz4 library capabilities, but
-checking all library lines of code. This is just an incentive to implement more
-of the lz4 functionality at the R level!
