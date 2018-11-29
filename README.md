@@ -12,10 +12,11 @@ October, 2018: there were some severe internal lz4 bugs that apparently also
 affect the fst package. I re-activated this repository to update lz4 for those
 who are still using it, and will file bug reports against fst...
 
-However, one potential advantage of this package is single-threaded operation
-(when used in process-parallel settings), and compatability with the command
-line lz4 file format, see for instance the example in the help page
-for `?lzDecompress`.
+However, one potential advantage of this package is default single-threaded
+operation (when used in process-parallel settings)--although that can be
+overcome with a function in the fst package, and compatability with the
+command line lz4 file format, see for instance the example in the help page for
+`?lzDecompress`.
 
 
 # lz4 Data Compression/Decompression Functions 
